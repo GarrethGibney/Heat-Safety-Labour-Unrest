@@ -18,6 +18,8 @@ else {
 
 * ===> Treatment <=== *
 gen byte treated_state = state=="CA"
+gen treatment_year = 2005
+
 
 
 *****************************************************************
