@@ -1,27 +1,3 @@
-
-*****************************************************************
-***********************   Data Set-up   *************************
-*****************************************************************
-* ===> Loading Data <=== *
-import delimited "C:\Users\20234503\Desktop\Research\Strikes, Temperature, and Heat Safety Laws\Project\Data\State_Year_FMCS_Rate.csv", clear
-
-* ===> Encoding Fixed Effects <=== *
-encode state, gen(state_id)
-
-capture confirm numeric variable naics2
-if _rc { // NAICS2 is string
-    encode naics2, gen(naics2_id)
-}
-else {
-    gen long naics2_id = naics2
-}
-
-* ===> Treatment <=== *
-gen byte treated_state = state=="CA"
-gen treatment_year = 2005
-
-
-
 *****************************************************************
 *************************   Analysis   *************************
 *****************************************************************
@@ -37,25 +13,22 @@ gen treatment_year = 2005
 
 * ===> Baseline <=== *
 foreach var of varlist count {
-	reghdfe `var' ib2005.year##i.outdoor##i.treated_state, ///
-    absorb(state_id naics2_id) vce(cluster state_id)
+	reghdfe `var' ib2005.year##i.outdoor##i.treated_state if inrange(year,2002,2008), /// 
+	vce(cluster state_id)
 }
 * ===> Joint Signifigance of Pre-Trends <=== *
-test (1.outdoor#1.treated_state#2000.year = 0) ///
-     (1.outdoor#1.treated_state#2001.year = 0) ///
-     (1.outdoor#1.treated_state#2002.year = 0) ///
+test (1.outdoor#1.treated_state#2002.year = 0) ///
      (1.outdoor#1.treated_state#2003.year = 0) ///
      (1.outdoor#1.treated_state#2004.year = 0)
 
 * ===> Avg. Effect of Post-Trends <=== *
 lincom (1.outdoor#1.treated_state#2006.year + 1.outdoor#1.treated_state#2007.year ///
-      + 1.outdoor#1.treated_state#2008.year + 1.outdoor#1.treated_state#2009.year ///
-      + 1.outdoor#1.treated_state#2010.year) / 5
+      + 1.outdoor#1.treated_state#2008.year) / 3
 	
 * ===> Excludes Potential Partially Treated Sectors from Untreated <=== *
 foreach var of varlist count {
-	reghdfe `var' ib2005.year##i.outdoor##i.treated_state if sector_type != "Partial Treated", ///
-    absorb(state_id naics2_id) vce(cluster state_id)
+	reghdfe `var' ib2005.year##i.outdoor##i.treated_state if sector_type != "Partial Treated" & inrange(year,2002,2008), ///
+    vce(cluster state_id)
 }
 
 

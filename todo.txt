@@ -1,0 +1,5 @@
+To-do List
+(23/20/2023)
+1. Download County-Business Paterns Data for Pre-treatment Period (Complete)
+2. Update and Clean Code 
+3. Update Slides
